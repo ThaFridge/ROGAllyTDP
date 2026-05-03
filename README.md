@@ -1,101 +1,75 @@
-# SimpleDeckyTDP
+# ROGAllyTDP
 
-[![](https://img.shields.io/github/downloads/aarron-lee/SimpleDeckyTDP/total.svg)](https://github.com/aarron-lee/SimpleDeckyTDP/releases)
+A Decky Loader plugin for TDP and power management, tailored exclusively for the **ASUS ROG Ally (RC71L) with the AMD Ryzen Z1 Extreme**, running on **SteamOS**.
 
-This is a Linux TDP Decky Plugin with support for AMD and experimental Intel support
+![plugin screenshot](./img/recent.jpg)
 
+> **Note**: this is a focused derivative of [SimpleDeckyTDP](https://github.com/aarron-lee/SimpleDeckyTDP). If you are not on a ROG Ally Z1 Extreme on SteamOS, please use the upstream project instead.
+
+- [About this project](#about-this-project)
+- [Scope](#scope)
 - [Features](#features)
-- [Compatibility](#compatibility)
 - [Requirements](#requirements)
-- [Installation](#install)
-  - [Prerequisites](#prerequisites)
-  - [Quick Install / Update](#quick-install--update)
-  - [SteamOS Installation](#steamos-installation)
-  - [Manual Install](#manual-install)
-- [Manual Build](#manual-build)
-- [Uninstall Instructions](#uninstall-instructions)
-- [Advanced Configuration](#advanced-configuration)
-  - [Desktop App](#desktop-app)
-  - [Custom Device Settings](#custom-device-settings)
-  - [CPU Boost Controls](#are-there-cpu-boost-controls)
+- [Install](#install)
+- [Manual build](#manual-build)
+- [Uninstall](#uninstall)
 - [Troubleshooting](#troubleshooting)
-  - [Steam Deck Troubleshooting](#steam-deck-troubleshooting)
-  - [ROG Ally Troubleshooting](#rog-ally-troubleshooting)
-  - [Ryzenadj Troubleshooting](#ryzenadj-troubleshooting)
-- [Attribution](#attribution)
+- [Credits](#credits)
+- [License](#license)
 
-![plugin image](./img/recent.jpg)
+## About this project
+
+ROGAllyTDP is a standalone derivative of the excellent **[SimpleDeckyTDP](https://github.com/aarron-lee/SimpleDeckyTDP)** by **Aarron Lee** and contributors.
+
+SimpleDeckyTDP is a brilliant cross-device, cross-distro TDP plugin and the entire foundation this project is built on. **Huge thanks and full credit to its authors for their outstanding work** — none of this would exist without it. Please consider starring and supporting the upstream project.
+
+ROGAllyTDP does not aim to replace SimpleDeckyTDP. It is a deliberate narrowing of scope: one device, one OS, tuned and tested only for that combination.
+
+## Scope
+
+- **Hardware**: ROG Ally with Ryzen **Z1 Extreme** only (RC71L). No Ally X, no Steam Deck, no Legion Go, no Intel handhelds.
+- **OS**: **SteamOS** only (3.7+), with the kernel and `asus-nb-wmi` modules Valve ships.
+
+The reason is simple: this is the hardware and the OS I run, and the only combination I can develop, test, and validate against. By dropping multi-device and multi-distro branching, the codebase can be tuned specifically to the Z1 Extreme on SteamOS — defaults, clamps, workarounds, profiles — without risking regressions on platforms I cannot verify.
+
+**If you are not on a ROG Ally Z1 Extreme running SteamOS, please use the upstream [SimpleDeckyTDP](https://github.com/aarron-lee/SimpleDeckyTDP).** It is broader, better maintained for general use, and supports many more devices and distros.
 
 ## Features
 
-- per game TDP Profiles (and optional separate AC Power Profiles)
-  - custom TDP limits
-- Power Governor and Energy Performance Preference controls
-- GPU Controls
-  - GPU Controls are not available on Intel
-- SMT control
-- CPU Boost control\*
-  - note, AMD devices require a newer kernel for CPU boost controls
-  - CPU boost controls appear automatically if it's available
-- set TDP on AC Power events and suspend-resume events
-- TDP Polling - useful for devices that change TDP in the background
-- Desktop App - see [Desktop App Section](#desktop-app) for more details
-- Legion Go TDP via WMI calls (allows for TDP control with secure boot)
-- ROG Ally TDP via WMI calls (allows for TDP control with secure boot)
-- (For ROG Ally) Battery Charge Limit
-- etc
+Scoped to the Z1 Extreme on SteamOS:
 
-## Compatibility
-
-Tested on SteamOS, ChimeraOS, NobaraOS, SteamFork, and Bazzite.
-
-Other distros not tested. Intel support is experimental and still a work in progress.
-
-Currently NOT compatible with Nvidia or other discrete GPU systems, this plugin is currently for APUs only
+- Per-game TDP profiles, with optional separate AC-power profiles
+- TDP control via Asus WMI (works with secure boot, no `ryzenadj` required)
+- Platform profile (`low-power` / `quiet` / `balanced` / `performance`) management synced to TDP
+- GPU min/max clock controls
+- CPU controls: EPP, power governor, SMT
+- Battery charge limit
+- MCU "extreme powersave" toggle (requires recent MCU firmware)
+- Apply TDP on AC plug/unplug events and on resume from suspend
+- Background TDP polling — defends against the Z1E's known ~5-minute PPT snap-back at higher wattages
 
 ## Requirements
 
-### AMD
+- ROG Ally Z1 Extreme (RC71L)
+- SteamOS 3.7 or newer
+- [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) installed
+- MCU firmware **≥ 319** recommended (required for safe MCU powersave; older firmware causes back-button / suspend issues)
 
-This plugin builds + ships ryzenadj for TDP control, but will prioritize any pre-installed ryzenadj binary that can be located in your PATH. ChimeraOS, Bazzite Deck Edition, and NobaraOS Deck edition, should already have ryzenadj pre-installed.
+## Install
 
-Certain devices, such as the Steam Deck, Legion Go + S, ROG Ally, and Ally X, do not need ryzenadj for TDP control.
-
-### Intel (experimental)
-
-Intel support was built for the `intel_pstate` scaling driver, and is still an experimental work in progress.
-
-To check if your system is compatible, run the following in terminal:
+In Desktop mode, run the following in a terminal, then reboot:
 
 ```bash
-cat /sys/devices/system/cpu/cpufreq/policy*/scaling_driver
+curl -L https://github.com/ThaFridge/ROGAllyTDP/raw/main/install.sh | sh
 ```
 
-If the scaling is `intel_pstate`, then your device should be compatible
+The same command both installs and updates the plugin.
 
-# Install
+### Manual install
 
-### Prerequisites
+Download the latest release from the [releases page](https://github.com/ThaFridge/ROGAllyTDP/releases), unzip, move the resulting folder to `$HOME/homebrew/plugins/`, then:
 
-Decky Loader must already be installed.
-
-### Quick Install / Update
-
-Run the following in terminal, then reboot. Note that this works both for installing or updating the plugin
-
-```
-curl -L https://github.com/aarron-lee/SimpleDeckyTDP/raw/main/install.sh | sh
-```
-
-### Manual Install
-
-Download the latest release from the [releases page](https://github.com/aarron-lee/SimpleDeckyTDP/releases)
-
-Unzip the zip file, and move the `SimpleDeckyTDP` folder to your `$HOME/homebrew/plugins` directory
-
-then run:
-
-```
+```bash
 sudo systemctl restart plugin_loader.service
 ```
 
@@ -103,13 +77,12 @@ sudo systemctl restart plugin_loader.service
 
 Dependencies:
 
-- Node.js v16.14+ and pnpm installed
-- fully functional ryzenadj
+- Node.js v16.14+
+- pnpm
 
 ```bash
-git clone https://github.com/aarron-lee/SimpleDeckyTDP.git
-
-cd SimpleDeckyTDP
+git clone https://github.com/ThaFridge/ROGAllyTDP.git
+cd ROGAllyTDP
 
 # if pnpm not already installed
 npm install -g pnpm
@@ -119,181 +92,55 @@ pnpm update @decky/ui --latest
 pnpm run build
 ```
 
-Afterwards, you can place the entire `SimpleDeckyTDP` folder in the `~/homebrew/plugins` directly, then restart your plugin service
+Place the resulting folder in `~/homebrew/plugins/`, then:
 
 ```bash
 sudo systemctl restart plugin_loader.service
 ```
 
-### Uninstall Instructions
+## Uninstall
 
-In Desktop mode, run the following in terminal:
+In Desktop mode:
 
 ```bash
-sudo rm -rf $HOME/homebrew/plugins/SimpleDeckyTDP
+sudo rm -rf $HOME/homebrew/plugins/ROGAllyTDP
 sudo systemctl restart plugin_loader.service
-```
-
-## Advanced configuration
-
-### Desktop App
-
-(Experimental) [SimpleDeckyTDP-Desktop App](https://github.com/aarron-lee/SimpleDeckyTDP-Desktop) - Desktop port of SimpleDeckyTDP
-
-Intel support is still a work in progress for the Desktop app
-
-- Note: the Desktop app does not have full feature parity with the Decky Plugin. Certain features cannot be implemented yet, such as:
-  - per-game profiles
-  - AC Profiles (in the Desktop app, AC Profiles are only supported on select devices)
-  - etc
-
-The Desktop App also should not be used simultaneously with the SimpleDeckyTDP decky plugin, you should only use one or the other at any given time.
-
-This is because 2-way communication between the plugin and Desktop app is currently not possible.
-
-### Are there CPU boost controls?
-
-Note, CPU Boost should generally be disabled for the ROG Ally and Ally X, CPU boost is known to cause excessive power draw on the Ally and Ally X
-
-CPU Boost controls require a scaling-driver that supports CPU boost. Many distros, by default, use `amd-pstate-epp` as the scaling driver. You must be on a newer kernel for to get CPU Boost controls on `amd-pstate-epp`
-
-CPU boost controls will appear automatically if they're available
-
-If you previously changed to amd_pstate=passive for to get CPU boost controls on BazziteOS, you can revert it via the following:
-
-```
-rpm-ostree kargs --delete-if-present=amd_pstate=passive
 ```
 
 ## Troubleshooting
 
-### TDP Control is not working
+### TDP control isn't working
 
-First try updating the plugin to the latest version.
+1. Update the plugin (re-run the install command above) and reboot.
+2. If that doesn't help, delete `$HOME/homebrew/settings/ROGAllyTDP/settings.json` and reboot. Note: this resets all per-game profiles — back the file up first if you want to keep them.
+3. Still broken? Open an issue on the [issue tracker](https://github.com/ThaFridge/ROGAllyTDP/issues).
 
-```
-# update script
-curl -L https://github.com/aarron-lee/SimpleDeckyTDP/raw/main/install.sh | sh
-```
+### MCU powersave / suspend / back buttons after wake
 
-If this doesn't fix your issue, next try deleting your `$HOME/homebrew/settings/SimpleDeckyTDP/settings.json` file, and rebooting.
+Ensure your **MCU firmware is ≥ 319**. Older firmware is known to break suspend and the back paddles when MCU powersave is enabled. If you cannot update MCU firmware, leave MCU powersave off.
 
-If neither works, please create a github issue.
+### CPU boost toggle has no effect
 
-### Buggy behavior after upgrading the plugin to a new version
+SteamOS 3.7.5+ uses the `amd-pstate-epp` scaling driver in `active` mode. On this driver the per-policy boost write often reverts silently — this is a kernel/driver limitation, not a plugin bug. CPU boost is in any case **not recommended** on the Ally: it draws excessive power for little gain.
 
-If you see buggy behavior after upgrading to a new version of the plugin, it might be due to some bad values in an older settings file.
+### TDP drifts down to ~30 W after several minutes
 
-Try deleting the `$HOME/homebrew/settings/SimpleDeckyTDP/settings.json` file.
+The Ally Z1E's embedded controller enforces a sustained ~30 W ceiling and will roll back higher PPT values after roughly five minutes. This is hardware behaviour, not a plugin bug. Background polling re-applies your target periodically.
 
-Note that this will delete any of your saved TDP profiles, so you could optionally copy it somewhere else to keep it as a backup instead.
+## Credits
 
-### My eGPU is being affected by TDP settings
+This project is built entirely on the foundation laid by others. In particular:
 
-The Steam GPU slider reportedly affects eGPUs, if you are using an eGPU you should disable Steam's GPU toggle.
+- **[SimpleDeckyTDP](https://github.com/aarron-lee/SimpleDeckyTDP)** by Aarron Lee — the upstream project this is derived from. Truly excellent work, and the reason ROGAllyTDP can exist at all.
+- **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — the plugin runtime.
+- **[PowerControl](https://github.com/mengmeet/PowerControl/)** — reference implementation for many TDP-control patterns.
+- **[Handheld Daemon (hhd) — adjustor](https://github.com/hhd-dev/adjustor/)** and **[hwinfo](https://github.com/hhd-dev/hwinfo)** — reference for Asus WMI and Ally-specific quirks.
+- **[ryzenadj](https://github.com/FlyGoat/RyzenAdj)** — even though this project favours WMI on the Ally, ryzenadj remains the canonical AMD TDP tool.
+- The **[asus-linux](https://asus-linux.org/)** project — the `asus-nb-wmi` and `asus-armoury` kernel work that makes everything on the sysfs side possible.
+- Valve and the SteamOS team — for opening SteamOS up to non-Deck handhelds.
 
-### Steam Deck troubleshooting
+If you find this useful, please star and support the upstream **[SimpleDeckyTDP](https://github.com/aarron-lee/SimpleDeckyTDP)** first.
 
-Valve changed the scaling driver from `acpi-cpufreq` to `amd-pstate-epp` in SteamOS version 3.7.5.
+## License
 
-This change reportedly causes issues with EPP and CPU boost controls if you already had SDTDP installed. The solution is to fully reset the SDTDP settings via deleting the settings file.
-
-NOTE: this will reset any per-game profiles you have previously made.
-
-```bash
-# run this to remove the old settings.json
-rm $HOME/homebrew/settings/SimpleDeckyTDP/settings.json
-```
-
-### ROG Ally Troubleshooting
-
-The ROG ally has some known issues related to CPU Boost and SMT.
-
-- Suspend often gets borked if you disable SMT
-  - SDTDP ships a workaround for the SMT bug on the Ally and Ally X, where it will temporarily turn on SMT before suspend
-- CPU boost is reportedly misconfigured on the Ally and causes excessive power usage, disabling CPU boost is recommended
-
-#### Rog Ally Extreme Power Save (aka MCU Powersave)
-
-After enabling Extreme Powersave mode (aka MCU powersave), make sure you're on the latest MCU firmware (319 if original ROG Ally, 314 for the Ally X).
-
-If you encounter issues with suspend, or back buttons not working after suspend-resume, it is likely due to your MCU firmware not being up to date, or your distro shipping old Asus-linux kernel modules.
-
-### Legion Go Troubleshooting
-
-The Legion Go requires using Lenovo's built-in WMI methods for device stability.
-
-This use the Legion Go driver that adds TDP controls in the kernel.
-
-This should also work for the Legion Go S.
-
-### Ryzenadj troubleshooting
-
-Note, SimpleDeckyTDP now ships it's own bundled ryzenadj, but by default the plugin will try to use ryzenadj that is already on the system. if `which ryzenadj` in terminal outputs a value, that will be used by the plugin.
-
-The bundled ryzenadj can be found at `$HOME/homebrew/plugins/SimpleDeckyTDP/bin/ryzenadj`
-
-To test your ryzenadj, try the following:
-
-```
-$ sudo ryzenadj -a 14000 -b 14000 -c 14000
-```
-
-the command above sets 14W TDP. You should see the following if sucessful:
-
-```
-Sucessfully set stapm_limit to 14000
-Sucessfully set fast_limit to 14000
-Sucessfully set slow_limit to 14000
-```
-
-If you don't see the success messages, your ryzenadj is most likely not working or configured for your device.
-
-You can also test by running the following:
-
-```
-$ sudo ryzenadj -i
-```
-
-This should print out a table that looks something like the following:
-
-```
-CPU Family: Rembrandt
-SMU BIOS Interface Version: 18
-Version: v0.13.0
-PM Table Version: 450005
-|        Name         |   Value   |     Parameter      |
-|---------------------|-----------|--------------------|
-| STAPM LIMIT         |     8.000 | stapm-limit        |
-| STAPM VALUE         |     0.062 |                    |
-```
-
-If you see an error, you may need to set `iomem=relaxed` as a boot parameter for your kernel, or disable secure boot.
-
-Note that if you have SELinux + early lockdown enabled, ryzenadj will not work when trying to set TDP.
-
-For Bazzite users, you can enable `iomem=relaxed` via running the following:
-
-```bash
-# for Bazzite users
-rpm-ostree kargs --append-if-missing=iomem=relaxed
-```
-
-If you later want to remove the karg, run:
-
-```bash
-# for Bazzite users
-rpm-ostree kargs --delete-if-present="iomem=relaxed"
-```
-
-# Attribution
-
-Thanks to the following for making this plugin possible:
-
-- [PowerControl](https://github.com/mengmeet/PowerControl/)
-- [hhd-adjustor](https://github.com/hhd-dev/adjustor/)
-- [hhd-hwinfo](https://github.com/hhd-dev/hwinfo)
-- [decky loader](https://github.com/SteamDeckHomebrew/decky-loader/)
-- [ryzenadj](https://github.com/FlyGoat/RyzenAdj)
-
-As well as a big shoutout to SteamFork folks for troubleshooting and testing Intel support
+BSD 3-Clause License, inherited from upstream SimpleDeckyTDP. See [LICENSE](./LICENSE) for the full text and copyright notices.
