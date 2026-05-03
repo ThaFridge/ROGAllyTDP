@@ -1,11 +1,11 @@
 {
-  "name": "SimpleDeckyTDP",
-  "author": "Aarron Lee",
+  "name": "ROGAllyTDP",
+  "author": "ThaFridge",
   "flags": ["root"],
   "api_version": 1,
   "publish": {
-    "tags": ["tdp", "root"],
-    "description": "Hardware control plugin for PC handhelds, including TDP, GPU, etc",
-    "image": "https://raw.githubusercontent.com/aarron-lee/SimpleDeckyTDP/refs/heads/main/img/plugin-image.jpg"
+    "tags": ["tdp", "root", "rog-ally"],
+    "description": "TDP / power management plugin scoped to the ASUS ROG Ally (Z1 Extreme) on SteamOS. Derivative of SimpleDeckyTDP by Aarron Lee.",
+    "image": "https://raw.githubusercontent.com/ThaFridge/ROGAllyTDP/refs/heads/main/img/plugin-image.jpg"
   }
 }

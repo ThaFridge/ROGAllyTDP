@@ -280,23 +280,23 @@ class Plugin:
 
   # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
   async def _main(self):
-    decky_plugin.logger.info("SimpleDeckyTDP Starting")
+    decky_plugin.logger.info("ROGAllyTDP Starting")
     migrations.check_ryzenadj_coall_support()
     if charge_limit.supports_charge_limit():
       charge_limit.initialize_charge_limit()
 
   # Function called first during the unload process, utilize this to handle your plugin being removed
   async def _unload(self):
-    decky_plugin.logger.info("SimpleDeckyTDP Unloading")
+    decky_plugin.logger.info("ROGAllyTDP Unloading")
     pass
 
   async def _uninstall(self):
-    decky_plugin.logger.info("SimpleDeckyTDP Uninstalling")
+    decky_plugin.logger.info("ROGAllyTDP Uninstalling")
     pass
 
   # Migrations that should be performed before entering `_main()`.
   async def _migration(self):
     decky_plugin.logger.info("Migrating")
-
-    # migrations.migrate_smt()
-    # migrations.migrate_gpu_mode()
+    # One-time import of settings from upstream SimpleDeckyTDP, if present.
+    # Runs before any code reads the (new) settings file.
+    migrations.migrate_from_simpledecky_tdp()

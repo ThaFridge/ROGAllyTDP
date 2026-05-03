@@ -1,7 +1,7 @@
 {
-  "name": "simple-decky-tdp",
-  "version": "1.0.2",
-  "description": "Hardware Control plugin for PC handhelds, including TDP, GPU, EPP, etc",
+  "name": "rog-ally-tdp",
+  "version": "0.1.0",
+  "description": "TDP / power management Decky plugin scoped to the ROG Ally (Z1 Extreme) on SteamOS. Derivative of SimpleDeckyTDP by Aarron Lee.",
   "type": "module",
   "scripts": {
     "build": "rollup -c",
@@ -10,18 +10,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SteamDeckHomebrew/decky-plugin-template.git"
+    "url": "git+https://github.com/ThaFridge/ROGAllyTDP.git"
   },
   "keywords": [
     "decky",
-    "plugin"
+    "plugin",
+    "rog-ally",
+    "steamos",
+    "tdp"
   ],
-  "author": "Aarron L",
+  "author": "ThaFridge",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/aarron-lee/SimpleDeckyTDP/issues"
+    "url": "https://github.com/ThaFridge/ROGAllyTDP/issues"
   },
-  "homepage": "https://github.com/aarron-lee/SimpleDeckyTDP",
+  "homepage": "https://github.com/ThaFridge/ROGAllyTDP",
   "devDependencies": {
     "@decky/rollup": "^1.0.1",
     "@rollup/plugin-commonjs": "^26.0.1",

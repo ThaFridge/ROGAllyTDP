@@ -8,6 +8,6 @@ else
   ln -s ./defaults/i18n ./i18n
 fi
 pnpm run build
-sudo rm -r /home/$USER/homebrew/plugins/SimpleDeckyTDP/
-sudo cp -r /home/$USER/Development/SimpleDeckyTDP/ ~/homebrew/plugins/
+sudo rm -r /home/$USER/homebrew/plugins/ROGAllyTDP/
+sudo cp -r /home/$USER/Development/ROGAllyTDP/ ~/homebrew/plugins/
 sudo systemctl restart plugin_loader.service

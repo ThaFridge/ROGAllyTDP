@@ -1,6 +1,5 @@
 /*
-  Components in this file will be replaced in different frontends,
-  such as the Electron SimpleDeckyTDP frontend
+  Components in this file may be replaced in alternative frontends.
 */
 import {
   ButtonItem,

@@ -7,7 +7,7 @@ import json
 import ssl
 import shutil
 
-API_URL = "https://api.github.com/repos/aarron-lee/SimpleDeckyTDP/releases/latest"
+API_URL = "https://api.github.com/repos/ThaFridge/ROGAllyTDP/releases/latest"
 
 def restart_decky_loader():
   env = os.environ.copy()
@@ -32,10 +32,10 @@ def download_latest_build():
 
   download_url = json_data.get("assets")[0].get("browser_download_url")
 
-  file_path = "/tmp/SimpleDeckyTDP.tar.gz"
+  file_path = "/tmp/ROGAllyTDP.tar.gz"
 
   if download_url.endswith(".zip"):
-    file_path = "/tmp/SimpleDeckyTDP.zip"
+    file_path = "/tmp/ROGAllyTDP.zip"
 
   with urllib.request.urlopen(download_url, context=gcontext) as response, open(file_path, 'wb') as output_file:
     output_file.write(response.read())
@@ -47,7 +47,7 @@ def ota_update():
   downloaded_filepath = download_latest_build()
 
   if os.path.exists(downloaded_filepath):
-    plugin_dir = f'{decky_plugin.DECKY_USER_HOME}/homebrew/plugins/SimpleDeckyTDP'
+    plugin_dir = f'{decky_plugin.DECKY_USER_HOME}/homebrew/plugins/ROGAllyTDP'
 
     try:
       recursive_chmod(plugin_dir, stat.S_IWUSR)
@@ -80,7 +80,7 @@ def get_latest_version():
 
 def reset_settings():
   try:
-    settings_file = f'{decky_plugin.DECKY_USER_HOME}/homebrew/settings/SimpleDeckyTDP/settings.json'
+    settings_file = f'{decky_plugin.DECKY_USER_HOME}/homebrew/settings/ROGAllyTDP/settings.json'
     os.remove(settings_file)
 
     decky_plugin.logger.info(f'removed settings file at {settings_file}')

@@ -46,7 +46,7 @@ export default definePlugin(() => {
   });
 
   return {
-    name: "SimpleDeckyTDP",
+    name: "ROGAllyTDP",
     content: <AppContainer />,
     icon: <BsCpuFill />,
     onDismount: () => {

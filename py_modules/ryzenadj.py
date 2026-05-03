@@ -8,7 +8,7 @@ from plugin_settings import get_nested_setting
 
 LOCAL_RYZENADJ = f'{decky_plugin.DECKY_USER_HOME}/.local/bin/ryzenadj'
 NIX_RYZENADJ = f'{decky_plugin.DECKY_USER_HOME}/.nix-profile/bin/ryzenadj'
-FALLBACK_RYZENADJ = f'{decky_plugin.DECKY_USER_HOME}/homebrew/plugins/SimpleDeckyTDP/bin/ryzenadj'
+FALLBACK_RYZENADJ = f'{decky_plugin.DECKY_USER_HOME}/homebrew/plugins/ROGAllyTDP/bin/ryzenadj'
 
 RYZENADJ_PATH = None
 
