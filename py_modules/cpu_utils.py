@@ -150,6 +150,16 @@ def set_cpb_boost(enabled):
 def supports_cpu_boost():
   try:
     with plugin_timeout.time_limit(4):
+      # On the ROG Ally with amd-pstate-epp in `active` mode (SteamOS 3.7.5+
+      # default), per-policy boost writes appear to succeed but silently
+      # revert. The toggle would be misleading, so hide it. Users on
+      # `passive` mode or older kernels still see it.
+      if device_utils.is_rog_ally_series():
+        scaling_driver = get_scaling_driver()
+        pstate_status = get_pstate_status()
+        if scaling_driver == ScalingDrivers.PSTATE_EPP.value and pstate_status == 'active':
+          return False
+
       cpu_boost_paths = get_cpb_boost_paths()
       if len(cpu_boost_paths) > 0 and os.path.exists(cpu_boost_paths[0]):
         return True

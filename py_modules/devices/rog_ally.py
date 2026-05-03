@@ -54,22 +54,41 @@ def supports_wmi_tdp():
     return True
   return False
 
+def _pick_platform_profile(tdp, choices):
+  # Prefer matching by name, since kernel/firmware may expose 3 or 4 entries
+  # in different orders (e.g. "low-power quiet balanced performance" vs
+  # "quiet balanced performance"). Indexing by position is fragile.
+  if not choices:
+    return None
+
+  def first_present(*candidates):
+    for c in candidates:
+      if c in choices:
+        return c
+    return None
+
+  if tdp < 10:
+    return first_present('low-power', 'quiet', 'balanced') or choices[0]
+  if tdp < 17:
+    return first_present('quiet', 'low-power', 'balanced') or choices[0]
+  if tdp < 22:
+    return first_present('balanced', 'quiet', 'performance') or choices[-1]
+  return first_present('performance', 'balanced') or choices[-1]
+
 def set_platform_profile(tdp):
   platform_profile_choices = get_platform_profile_options()
+  command = _pick_platform_profile(tdp, platform_profile_choices)
 
-  command = platform_profile_choices[0]
-  if tdp < 13:
-    command = platform_profile_choices[0]
-  elif tdp < 20:
-    command =  platform_profile_choices[1]
-  else:
-    command =  platform_profile_choices[2]
+  if not command:
+    decky_plugin.logger.error(f"{__name__} platform_profile no choices available")
+    return False
+
   try:
     with open(PLATFORM_PROFILE_PATH, 'w') as file:
       file.write(command)
   except Exception as e:
     decky_plugin.logger.error(f"{__name__} platform_profile {command} error {e}")
-        
+
   sleep(1.0)
   return True
 
@@ -115,6 +134,13 @@ def is_bazzite_deck():
       decky_plugin.logger.error(f'{__name__} error checking bazzite image {e}')
   return False
 
+# Minimum MCU firmware versions for safe `mcu_powersave=1`.
+# Below these versions, suspend/resume and back-paddle wakeup are known
+# to break. We still expose the toggle (users can override / update FW
+# afterwards), but flag it as unsafe so the frontend can warn.
+MIN_SAFE_MCU_VERSION_ALLY = 319
+MIN_SAFE_MCU_VERSION_ALLY_X = 314
+
 def supports_mcu_powersave():
   mc_path_exists = os.path.exists(LEGACY_MCU_POWERSAVE_PATH) or os.path.exists(ASUS_ARMORY_MCU_POWERSAVE_PATH)
 
@@ -126,13 +152,23 @@ def supports_mcu_powersave():
     if device_utils.is_rog_ally_series():
       return True
 
-    # check MCU version
-    # mc_version = get_mcu_version()
+  return False
 
-    # if device_utils.is_rog_ally() and mc_version >= 319:
-    #   return True
-    # if device_utils.is_rog_ally_x() and mc_version >= 314:
-    #   return True
+def mcu_powersave_safe():
+  if not supports_mcu_powersave():
+    return False
+  if is_bazzite_deck():
+    return True
+
+  version = get_mcu_version()
+  if version <= 0:
+    # Unknown version — don't mark as safe, but don't hide the toggle either.
+    return False
+
+  if device_utils.is_rog_ally_x():
+    return version >= MIN_SAFE_MCU_VERSION_ALLY_X
+  if device_utils.is_rog_ally():
+    return version >= MIN_SAFE_MCU_VERSION_ALLY
 
   return False
 

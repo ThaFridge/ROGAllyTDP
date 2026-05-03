@@ -13,7 +13,7 @@ import plugin_utils
 import migrations
 import steam_info
 import device_utils
-from devices import lenovo
+from devices import lenovo, rog_ally
 import charge_limit
 import i18n
 
@@ -50,6 +50,9 @@ class Plugin:
         if response['powerControlsEnabled']:
           response['eppOptions'] = power_utils.get_available_epp_options()
           response['powerGovernorOptions'] = power_utils.get_available_governor_options()
+        if device_utils.is_rog_ally_series():
+          response['mcuVersion'] = rog_ally.get_mcu_version()
+          response['mcuPowersaveSafe'] = rog_ally.mcu_powersave_safe()
     except Exception as e:
       decky_plugin.logger.error(f'{__name__} get_power_control_info {e}')
     return response
@@ -157,7 +160,12 @@ class Plugin:
 
   async def on_suspend(self):
     decky_plugin.logger.info(f'main#on_suspend started')
-    cpu_utils.set_smt(True)
+    # Workaround for the Ally/Ally X SMT-off suspend bug: force SMT on right
+    # before suspend. Steam Deck and others don't need this and re-enabling
+    # SMT can have side effects (e.g. unexpected CPU governor reapply on
+    # hotplug), so scope this to Ally only.
+    if device_utils.is_rog_ally_series():
+      cpu_utils.set_smt(True)
     decky_plugin.logger.info(f'main#on_suspend complete')
 
   async def on_resume(self):
@@ -165,6 +173,22 @@ class Plugin:
     if device_utils.is_legion_go():
       lenovo.invalidate_platform_profile_cache()
       lenovo.wait_for_wmi_ready(timeout_seconds=10)
+
+    # SteamOS issue #2383: after resume, EPP on CPU 1..N gets reset to
+    # "performance" on amd-pstate-epp. Re-apply EPP + governor immediately
+    # so we don't sit on the wrong EPP for the ~3.5s before the JS-side
+    # resume action fires. We don't have currentGameId here, so re-apply
+    # the default profile; per-game polling will overwrite shortly after.
+    if device_utils.is_rog_ally_series():
+      try:
+        with plugin_timeout.time_limit(2):
+          default_profile = get_tdp_profile('default')
+          if default_profile:
+            plugin_utils.set_power_governor_for_tdp_profile(default_profile)
+            plugin_utils.set_epp_for_tdp_profile(default_profile)
+      except Exception as e:
+        decky_plugin.logger.error(f'main#on_resume ally epp restore error {e}')
+
     decky_plugin.logger.info(f'main#on_resume complete')
 
   async def persist_cpu_boost(self, cpuBoost, gameId):
